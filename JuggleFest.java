@@ -1,8 +1,27 @@
+import java.io.*;
+
 public class JuggleFest
 {
 	public static void main(String[] args) 
 	{
-		
+		// Get the total number lines in the file. This is used to determine team size.
+		try
+		{
+			LineNumberReader lnr = new LineNumberReader(new FileReader("simpleJuggleFest.txt"));
+			int linesCount = 0;
+
+			while (lnr.readLine() != null)
+			{
+				linesCount++;
+			}
+
+			linesCount--; //Done because there is an empty line between Circuits and Jugglers
+			lnr.close();
+		}
+		catch(IOException e)
+		{
+			System.out.println("There was a problem reading the specified file");
+		}
 	}
 }
 
