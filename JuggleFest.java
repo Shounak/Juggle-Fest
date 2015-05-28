@@ -9,7 +9,7 @@ public class JuggleFest
 		output(readFile(fileName));
 	}
 
-	static int numberOfLines(String fileName)
+	private static int numberOfLines(String fileName)
 	{
 		// Get the total number lines in the file. This is used to determine team size.
 		int linesCount = 0;
@@ -29,7 +29,7 @@ public class JuggleFest
 			System.out.println("There was a problem reading the specified file");
 		}
 
-		return (linesCount-1); //Done because there is an empty line between Circuits and Jugglers
+		return (linesCount-1); // "-1" is because there is an empty line between Circuits and Jugglers
 	}
 
 	static HashMap<Circuit, ArrayList<Juggler>> readFile(String fileName)
@@ -65,14 +65,14 @@ public class JuggleFest
 				circuitLine = fileReader.readLine();
 			}
 
-			int jugglersPerTeam = (numberOfLines(fileName) - numberOfCircuits)/numberOfCircuits;
+			final int jugglersPerTeam = (numberOfLines(fileName) - numberOfCircuits)/numberOfCircuits;
 
 			// All the rest of the lines are jugglers
 			String jugglerLine;
 			while ((jugglerLine = fileReader.readLine()) != null)
 			{
 				String[] data = jugglerLine.split(" ");
-				placeJuggler(jugglerAssignments, circuits, data);
+				placeJuggler(jugglerAssignments, circuits, data, jugglersPerTeam);
 			}
 		}
 		catch (IOException e) 
@@ -94,7 +94,7 @@ public class JuggleFest
 		return jugglerAssignments;
 	}
 
-	private static void placeJuggler(HashMap<Circuit, ArrayList<Juggler>>  jugglersMap, HashMap<String, Circuit> circuitsMap, String[] abilities)
+	private static void placeJuggler(HashMap<Circuit, ArrayList<Juggler>>  jugglersMap, HashMap<String, Circuit> circuitsMap, String[] abilities, int teamSize)
 	{
 		String newJugglerName = abilities[1];
 		int newJugglerHandEyeCoordination = Integer.parseInt(abilities[2].split(":")[1]);
