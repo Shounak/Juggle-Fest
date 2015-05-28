@@ -8,7 +8,6 @@ public class JuggleFest
 		String fileName = "simpleJuggleFest.txt";
 		int linesCount = numberOfLines(fileName);
 		readFile(fileName);
-		HashMap<Circuit, Juggler[]> jugglerAssignments = new HashMap<>();
 	}
 
 	static int numberOfLines(String fileName)
@@ -37,60 +36,82 @@ public class JuggleFest
 	static void readFile(String fileName)
 	{
 		BufferedReader fileReader = null;
+
+		// A Hashmap where Keys are Circuits and Values are Jugglers
+		// HashMap is used for its O(1) lookup and as a natural way of organizing circuits and their lists of jugglers 
+		HashMap<Circuit, ArrayList<Juggler>> jugglerAssignments = new HashMap<>(); 
+
+		// Maps string circuit names to circuit objects e.x. "C0" => C C0 H:7 E:7 P:10
+		HashMap<String, Circuit> circuits = new HashMap<>();
+		int numberOfCircuits = 0;
 		try
 		{
 			fileReader = new BufferedReader(new FileReader(fileName));
-			String line;
 
-			ArrayList<Circuit> listOfCircuits = new ArrayList<>(); // A temporary list of all the circuits
-			ArrayList<Juggler> listOfJugglers = new ArrayList<>(); // A temporary list of all the jugglers
+			// read in all the circuits
+			String circuitLine = fileReader.readLine();
+			while (!(circuitLine.trim().equals("")) && circuitLine.charAt(0) == 'C') 
+			{	
+				String[] data = circuitLine.split(" ");
 
-			while ((line = fileReader.readLine()) != null) 
-			{
-				// ignore blank lines
-				if (line.trim() == "")
-					continue;
-
-				String[] data = line.split(" ");
-
-				if (data[0].equals("C"))
-				{
-					String newCircuitName = data[1];
-					int newCircuitHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
-					int newCircuitEndurance = Integer.parseInt(data[3].split(":")[1]);
-					int newCircuitPizzazz = Integer.parseInt(data[4].split(":")[1]);
-					listOfCircuits.add(new Circuit(newCircuitName, newCircuitHandEyeCoordination, newCircuitEndurance, newCircuitPizzazz));
-				}
-				if (data[0].equals("J"))
-				{
-					String newJugglerName = data[1];
-					int newJugglerHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
-					int newJugglerEndurance = Integer.parseInt(data[3].split(":")[1]);
-					int newJugglerPizzazz = Integer.parseInt(data[4].split(":")[1]);
-					String[] circuitPrefs = data[5].split(",");
-					listOfJugglers.add(new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs));
-				}
+				String newCircuitName = data[1];
+				int newCircuitHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
+				int newCircuitEndurance = Integer.parseInt(data[3].split(":")[1]);
+				int newCircuitPizzazz = Integer.parseInt(data[4].split(":")[1]);
+				Circuit newCircuit = new Circuit(newCircuitName, newCircuitHandEyeCoordination, newCircuitEndurance, newCircuitPizzazz);
+				jugglerAssignments.put(newCircuit, new ArrayList<Juggler>());
+				circuits.put(newCircuitName, newCircuit);
+				numberOfCircuits++;	
+				circuitLine = fileReader.readLine();
 			}
 
-			
+			int jugglersPerTeam = (numberOfLines(fileName) - numberOfCircuits)/numberOfCircuits;
+
+			// All the rest of the lines are jugglers
+			String jugglerLine;
+			while ((jugglerLine = fileReader.readLine()) != null)
+			{
+				String[] data = jugglerLine.split(" ");
+
+				String newJugglerName = data[1];
+				int newJugglerHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
+				int newJugglerEndurance = Integer.parseInt(data[3].split(":")[1]);
+				int newJugglerPizzazz = Integer.parseInt(data[4].split(":")[1]);
+				String[] circuitPrefs = data[5].split(",");
+				jugglerAssignments.get(circuits.get(circuitPrefs[0])).add(new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs));
+			}
+
+			Set set = jugglerAssignments.entrySet();
+
+			Iterator i = set.iterator();
+
+			while(i.hasNext()){
+				Map.Entry me = (Map.Entry)i.next();
+				System.out.println(me.getKey() + " : " + me.getValue());
+			}
+
 		}
-	} 
-	catch (IOException e) 
-	{
-		e.printStackTrace();
-	} 
-	finally 
-	{
-		try 
+		catch (IOException e) 
 		{
-			if (fileReader != null)
-				fileReader.close();
-		} catch (IOException ex) 
+			e.printStackTrace();
+		} 
+		finally 
 		{
-			ex.printStackTrace();
+			try 
+			{
+				if (fileReader != null)
+					fileReader.close();
+			} catch (IOException ex) 
+			{
+				ex.printStackTrace();
+			}
 		}
+	}
+
+	static int getScore(Circuit c, Juggler j)
+	{
+		return ((c.getHandEyeCoordination()*j.getHandEyeCoordination()) + (c.getEndurance()*j.getEndurance()) + (c.getPizzazz()*j.getPizzazz()));
 	}	
-}
 }
 
 class Circuit
@@ -123,6 +144,47 @@ class Circuit
 	public int getPizzazz()
 	{
 		return this.pizzazz;
+	}
+
+	// Overriding .equals and .hashCode is necessary for inserting Circuits as a Key into the HashMap
+	@Override
+	public boolean equals(Object other) 
+	{
+		if (!(other instanceof Circuit)) 
+		{
+			return false;
+		}
+		Circuit c = (Circuit) other;
+		return equalsHelper(name, c.name) && 
+		equalsHelper(handEyeCoordination, c.handEyeCoordination) &&
+		equalsHelper(endurance, c.endurance) &&
+		equalsHelper(pizzazz, c.pizzazz);
+	}
+
+	private static boolean equalsHelper(Object a, Object b) 
+	{
+		if (a == null || b == null) 
+		{
+			return false;
+		}
+		if (a == b) 
+		{
+			return true;
+		}
+
+		return a.equals(b);
+	}
+
+
+	@Override
+	public int hashCode() 
+	{
+		int hash = 17;
+		hash = hash * 31 + (name == null ? 0 : name.hashCode());
+		hash = hash * 31 + handEyeCoordination;
+		hash = hash * 31 + endurance;
+		hash = hash * 31 + pizzazz;
+		return hash;
 	}
 }
 
