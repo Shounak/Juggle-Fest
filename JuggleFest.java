@@ -6,8 +6,7 @@ public class JuggleFest
 	public static void main(String[] args) 
 	{
 		String fileName = "simpleJuggleFest.txt";
-		int linesCount = numberOfLines(fileName);
-		readFile(fileName);
+		output(readFile(fileName));
 	}
 
 	static int numberOfLines(String fileName)
@@ -33,7 +32,7 @@ public class JuggleFest
 		return (linesCount-1); //Done because there is an empty line between Circuits and Jugglers
 	}
 
-	static void readFile(String fileName)
+	static HashMap<Circuit, ArrayList<Juggler>> readFile(String fileName)
 	{
 		BufferedReader fileReader = null;
 
@@ -43,6 +42,7 @@ public class JuggleFest
 
 		// Maps string circuit names to circuit objects e.x. "C0" => C C0 H:7 E:7 P:10
 		HashMap<String, Circuit> circuits = new HashMap<>();
+
 		int numberOfCircuits = 0;
 		try
 		{
@@ -72,24 +72,8 @@ public class JuggleFest
 			while ((jugglerLine = fileReader.readLine()) != null)
 			{
 				String[] data = jugglerLine.split(" ");
-
-				String newJugglerName = data[1];
-				int newJugglerHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
-				int newJugglerEndurance = Integer.parseInt(data[3].split(":")[1]);
-				int newJugglerPizzazz = Integer.parseInt(data[4].split(":")[1]);
-				String[] circuitPrefs = data[5].split(",");
-				jugglerAssignments.get(circuits.get(circuitPrefs[0])).add(new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs));
+				placeJuggler(jugglerAssignments, circuits, data);
 			}
-
-			Set set = jugglerAssignments.entrySet();
-
-			Iterator i = set.iterator();
-
-			while(i.hasNext()){
-				Map.Entry me = (Map.Entry)i.next();
-				System.out.println(me.getKey() + " : " + me.getValue());
-			}
-
 		}
 		catch (IOException e) 
 		{
@@ -106,9 +90,35 @@ public class JuggleFest
 				ex.printStackTrace();
 			}
 		}
+
+		return jugglerAssignments;
 	}
 
-	static int getScore(Circuit c, Juggler j)
+	private static void placeJuggler(HashMap<Circuit, ArrayList<Juggler>>  jugglersMap, HashMap<String, Circuit> circuitsMap, String[] abilities)
+	{
+		String newJugglerName = abilities[1];
+		int newJugglerHandEyeCoordination = Integer.parseInt(abilities[2].split(":")[1]);
+		int newJugglerEndurance = Integer.parseInt(abilities[3].split(":")[1]);
+		int newJugglerPizzazz = Integer.parseInt(abilities[4].split(":")[1]);
+		String[] circuitPrefs = abilities[5].split(",");
+		jugglersMap.get(circuitsMap.get(circuitPrefs[0])).add(new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs));
+	}
+
+	static void output(HashMap<Circuit, ArrayList<Juggler>>  jugglersAndCircuits)
+	{
+		Set set = jugglersAndCircuits.entrySet();
+		Iterator i = set.iterator();
+
+		while(i.hasNext()){
+			Map.Entry<Circuit, ArrayList<Juggler>> entry = (Map.Entry)i.next();
+			System.out.print(entry.getKey().getName());
+			for (Juggler juggler : entry.getValue())
+				System.out.print(" " + juggler.getName());
+			System.out.println("");
+		}
+	}
+
+	private static int getScore(Circuit c, Juggler j)
 	{
 		return ((c.getHandEyeCoordination()*j.getHandEyeCoordination()) + (c.getEndurance()*j.getEndurance()) + (c.getPizzazz()*j.getPizzazz()));
 	}	
