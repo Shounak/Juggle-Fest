@@ -94,18 +94,26 @@ public class JuggleFest
 		int newJugglerEndurance = Integer.parseInt(abilities[3].split(":")[1]);
 		int newJugglerPizzazz = Integer.parseInt(abilities[4].split(":")[1]);
 		String[] circuitPrefs = abilities[5].split(",");
-
+		Juggler newJuggler = new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs);
+		int 
 		int circuitsListIndex = Character.getNumericValue(circuitPrefs[0].charAt(1));
-		circuitsList.get(circuitsListIndex).jugglers.add(new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs));
+		circuitsList.get(circuitsListIndex).jugglers.add();
 	}
 
 	static void output(ArrayList<Circuit>  jugglersAndCircuits)
 	{
-		for (Circuit c : jugglersAndCircuits)
+		for (int i  = jugglersAndCircuits.size()-1; i >=0; i--)
 		{
-			System.out.print(c.getName());
-			for (Juggler j : c.jugglers)
-				System.out.print(" " + j.getName());
+			Circuit currentCircuit = jugglersAndCircuits.get(i);
+			System.out.print(currentCircuit.getName());
+			for (int j = 0; j < currentCircuit.jugglers.size(); j++)
+			{
+				System.out.print(" " + currentCircuit.jugglers.get(j).getName());
+				for (String s : currentCircuit.jugglers.get(j).getCircuitPreferences())
+					System.out.print(" " + s + ":" + getScore(jugglersAndCircuits.get(Character.getNumericValue(s.charAt(1))), currentCircuit.jugglers.get(j)));
+				if (j < currentCircuit.jugglers.size()-1) // Only print a comma if it's not the last juggler in the circuit
+					System.out.print(",");
+			}
 			System.out.println("");
 		}
 	}
