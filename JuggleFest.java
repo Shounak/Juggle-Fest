@@ -72,7 +72,12 @@ public class JuggleFest
 				int newJugglerPizzazz = Integer.parseInt(data[4].split(":")[1]);
 				String[] circuitPrefs = data[5].split(",");
 				Juggler newJuggler = new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs);
-				placeJuggler(circuits, rejectedJugglers, newJuggler, jugglersPerTeam);
+				Circuit circuitToAddTo = circuits.get(Character.getNumericValue(newJuggler.getPreferredCircuit().charAt(1)));
+				Juggler rejectedJuggler =  circuitToAddTo.addJuggler(newJuggler, jugglersPerTeam);
+				if (rejectedJuggler != null)
+				{
+					System.out.println("A juggler was rejected");
+				}
 			}
 		}
 		catch (IOException e) 
@@ -92,12 +97,6 @@ public class JuggleFest
 		}
 
 		return circuits;
-	}
-
-	private static void placeJuggler(ArrayList<Circuit>  circuitsList, ArrayList<Juggler> rejectedJugglers, Juggler newJuggler, int teamSize)
-	{
-		System.out.println(newJuggler.getPreferredCircuit().charAt(1));
-		circuitsList.get(Character.getNumericValue(newJuggler.getPreferredCircuit().charAt(1))).addJuggler(newJuggler, teamSize);
 	}
 
 	static void output(ArrayList<Circuit>  jugglersAndCircuits)
@@ -143,12 +142,22 @@ class Circuit
 		return this.pizzazz;
 	}
 
+	// Adds jugglers to the circuit, and keeps the ordering of the jugglers in the circuit as greatest to least score. 
 	public Juggler addJuggler(Juggler j, int teamSize)
 	{
-		jugglers.add(j);
+		int insertIndex = 0;
+		int newJugglerScore = getScore(j);
+		for (Juggler currentJuggler : jugglers)
+		{
+			if (getScore(currentJuggler) < newJugglerScore)
+				break;
+			insertIndex++;
+		}
+		jugglers.add(insertIndex, j);
 		return null;
 	}
 
+	// Prints in the proper format this circuit's name and all its associated jugglers + scores etc. 
 	public void printJugglers(ArrayList<Circuit> circuitsList)
 	{
 		System.out.print(this.name);
@@ -161,10 +170,11 @@ class Circuit
 			if (j < this.jugglers.size()-1)
 				System.out.print(",");
 		}
-		System.out.println("");	
+		System.out.println("\n");	
 	}
 
-	public int getScore(Juggler j)
+	// Returns the dot product of this circuit and the given juggler
+	private int getScore(Juggler j)
 	{
 		return ((handEyeCoordination*j.getHandEyeCoordination()) + (endurance*j.getEndurance()) + (pizzazz*j.getPizzazz()));
 	}
@@ -177,7 +187,9 @@ class Juggler
 	private int handEyeCoordination;
 	private int endurance;
 	private int pizzazz;
+	// stores an array of circuit preferences which will be used to print this juggler's match score for each preferred circuit to the output file
 	private String[] circuitPreferences;
+	// This Queue also stores preferred circuit information. This is used to determine which circuit team to put this juggler into
 	private Queue<String> prefsQueue = new LinkedList<>();
 	public Juggler(String n, int h, int e, int p, String[] circuits)
 	{
