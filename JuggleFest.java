@@ -5,13 +5,13 @@ public class JuggleFest
 {
 	public static void main(String[] args) 
 	{
-		String fileName = "simpleJuggleFest.txt";
+		String fileName = "JuggleFest.txt";
 		output(readFile(fileName));
 	}
 
+	// Get the total number of lines in the file. This is used to determine team size.
 	private static int numberOfLines(String fileName)
 	{
-		// Get the total number lines in the file. This is used to determine team size.
 		int linesCount = 0;
 		try
 		{
@@ -76,9 +76,10 @@ public class JuggleFest
 				Juggler rejectedJuggler =  circuitToAddTo.addJuggler(newJuggler, jugglersPerTeam);
 				if (rejectedJuggler != null)
 				{
-					System.out.println("A juggler was rejected");
+					rejectedJugglers.add(rejectedJuggler);
 				}
 			}
+			placeRejectedJugglers(rejectedJugglers, circuits, jugglersPerTeam);
 		}
 		catch (IOException e) 
 		{
@@ -99,9 +100,27 @@ public class JuggleFest
 		return circuits;
 	}
 
+	static void placeRejectedJugglers(ArrayList<Juggler> rejectedJugglers, ArrayList<Circuit> circuits, int jugglersPerTeam)
+	{
+		if (rejectedJugglers.isEmpty())
+			return;
+
+		ArrayList<Juggler> newRejectedJugglers = new ArrayList<>();
+		for (Juggler j : rejectedJugglers)
+		{
+			Circuit rejectedJugglerCircuit = circuits.get(Character.getNumericValue(j.getPreferredCircuit().charAt(1)));
+			Juggler newRejectedJuggler =  rejectedJugglerCircuit.addJuggler(j, jugglersPerTeam);
+			if (newRejectedJuggler != null)
+			{
+				newRejectedJugglers.add(newRejectedJuggler);
+			}	
+		}
+
+		placeRejectedJugglers(newRejectedJugglers, circuits, jugglersPerTeam);
+	}
+
 	static void output(ArrayList<Circuit>  jugglersAndCircuits)
 	{
-		System.out.println("\n\n ----------------------------Output-------------------------");
 		for (int i  = jugglersAndCircuits.size()-1; i >=0; i--)
 		{
 			jugglersAndCircuits.get(i).printJugglers(jugglersAndCircuits);
@@ -153,7 +172,13 @@ class Circuit
 				break;
 			insertIndex++;
 		}
+		if (insertIndex >= teamSize)
+			return j;
 		jugglers.add(insertIndex, j);
+		if (jugglers.size() > teamSize)
+		{
+			return jugglers.remove(jugglers.size()-1);
+		}
 		return null;
 	}
 
