@@ -5,7 +5,7 @@ public class JuggleFest
 {
 	public static void main(String[] args) 
 	{
-		String fileName = "JuggleFest.txt";
+		String fileName = "simpleJuggleFest.txt";
 		output(readFile(fileName));
 	}
 
@@ -119,11 +119,11 @@ public class JuggleFest
 		placeRejectedJugglers(newRejectedJugglers, circuits, jugglersPerTeam);
 	}
 
-	static void output(ArrayList<Circuit>  jugglersAndCircuits)
+	static void output(ArrayList<Circuit>  circuits)
 	{
-		for (int i  = jugglersAndCircuits.size()-1; i >=0; i--)
+		for (int i  = circuits.size()-1; i >=0; i--)
 		{
-			jugglersAndCircuits.get(i).printJugglers(jugglersAndCircuits);
+			circuits.get(i).printJugglers(circuits);
 		}
 	}	
 }
@@ -144,22 +144,10 @@ class Circuit
 		pizzazz = p;
 	}
 
-	public String getName()
-	{
-		return this.name;
-	}
-	public int getHandEyeCoordination()
-	{
-		return this.handEyeCoordination;
-	}
-	public int getEndurance()
-	{
-		return this.endurance;
-	}
-	public int getPizzazz()
-	{
-		return this.pizzazz;
-	}
+	public String getName() { return this.name; }
+	public int getHandEyeCoordination() { return this.handEyeCoordination; }
+	public int getEndurance() { return this.endurance; }
+	public int getPizzazz() { return this.pizzazz; }
 
 	// Adds jugglers to the circuit, and keeps the ordering of the jugglers in the circuit as greatest to least score. 
 	public Juggler addJuggler(Juggler j, int teamSize)
@@ -183,7 +171,7 @@ class Circuit
 	}
 
 	// Prints in the proper format this circuit's name and all its associated jugglers + scores etc. 
-	public void printJugglers(ArrayList<Circuit> circuitsList)
+	public void printJugglers(List<Circuit> circuitsList)
 	{
 		System.out.print(this.name);
 		for (int j = 0; j < this.jugglers.size(); j++)
@@ -212,10 +200,12 @@ class Juggler
 	private int handEyeCoordination;
 	private int endurance;
 	private int pizzazz;
+
 	// stores an array of circuit preferences which will be used to print this juggler's match score for each preferred circuit to the output file
 	private String[] circuitPreferences;
 	// This Queue also stores preferred circuit information. This is used to determine which circuit team to put this juggler into
 	private Queue<String> prefsQueue = new LinkedList<>();
+
 	public Juggler(String n, int h, int e, int p, String[] circuits)
 	{
 		name = n;
@@ -229,27 +219,14 @@ class Juggler
 		}
 	}
 
-	public String getName()
-	{
-		return this.name;
-	}
-	public int getHandEyeCoordination()
-	{
-		return this.handEyeCoordination;
-	}
-	public int getEndurance()
-	{
-		return this.endurance;
-	}
-	public int getPizzazz()
-	{
-		return this.pizzazz;
-	}
-	public String[] getCircuitPreferences()
-	{
-		return this.circuitPreferences;
-	}
+	public String getName() { return this.name; }
+	public int getHandEyeCoordination() { return this.handEyeCoordination; }
+	public int getEndurance() { return this.endurance; }
+	public int getPizzazz() { return this.pizzazz; }
+	public String[] getCircuitPreferences() { return this.circuitPreferences; }
 
+	// Removes and returns this juggler's currently most preferred circuit
+	// Because the circuit gets removed, each time this is called, it moves down the list of preferred circuits
 	public String getPreferredCircuit()
 	{
 		if (!prefsQueue.isEmpty()) {
