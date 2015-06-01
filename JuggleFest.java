@@ -36,6 +36,7 @@ public class JuggleFest
 	{
 		BufferedReader fileReader = null;
 		ArrayList<Circuit> circuits = new ArrayList<>();
+		ArrayList<Juggler> rejectedJugglers = new ArrayList<>();
 
 		int numberOfCircuits = 0;
 		try
@@ -65,7 +66,13 @@ public class JuggleFest
 			while ((jugglerLine = fileReader.readLine()) != null)
 			{
 				String[] data = jugglerLine.split(" ");
-				placeJuggler(circuits, data, jugglersPerTeam);
+				String newJugglerName = data[1];
+				int newJugglerHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
+				int newJugglerEndurance = Integer.parseInt(data[3].split(":")[1]);
+				int newJugglerPizzazz = Integer.parseInt(data[4].split(":")[1]);
+				String[] circuitPrefs = data[5].split(",");
+				Juggler newJuggler = new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs);
+				placeJuggler(circuits, rejectedJugglers, newJuggler, jugglersPerTeam);
 			}
 		}
 		catch (IOException e) 
@@ -87,157 +94,131 @@ public class JuggleFest
 		return circuits;
 	}
 
-	private static void placeJuggler(ArrayList<Circuit>  circuitsList, String[] abilities, int teamSize)
+	private static void placeJuggler(ArrayList<Circuit>  circuitsList, ArrayList<Juggler> rejectedJugglers, Juggler newJuggler, int teamSize)
 	{
-		String newJugglerName = abilities[1];
-		int newJugglerHandEyeCoordination = Integer.parseInt(abilities[2].split(":")[1]);
-		int newJugglerEndurance = Integer.parseInt(abilities[3].split(":")[1]);
-		int newJugglerPizzazz = Integer.parseInt(abilities[4].split(":")[1]);
-		String[] circuitPrefs = abilities[5].split(",");
-		Juggler newJuggler = new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs);	
-		
-
-		int indexIntoJugglerList = 0;
-
-		mainloop:
-		for (String circuitName : newJuggler.prefsQueue) // loop through this juggler's preferred circuits
-		{
-			int circuitsListIndex = Character.getNumericValue(circuitName.charAt(1));
-			int currentCircuitMatchScore = getScore(circuitsList.get(circuitsListIndex), newJuggler);
-			for (Juggler juggler : circuitsList.get(circuitsListIndex).jugglers) // loop through the list of jugglers in this circuit
-			{
-				System.out.println(juggler.getName());
-				if (currentCircuitMatchScore > getScore(circuitsList.get(circuitsListIndex), juggler)) // this juggler is a better fit than one of the existing jugglers in this circuit
-				{
-					circuitsList.get(circuitsListIndex).jugglers.add(indexIntoJugglerList, newJuggler);
-					break mainloop;
-				}
-			}
-		}
+		System.out.println(newJuggler.getPreferredCircuit().charAt(1));
+		circuitsList.get(Character.getNumericValue(newJuggler.getPreferredCircuit().charAt(1))).addJuggler(newJuggler, teamSize);
 	}
 
-		/*
-		mainloop:
-		while (indexIntoJugglerList == 0) // loop if we are looking at a new circuit
-		{
-			//System.out.println(indexIntoJugglerList);
-			for (Juggler juggler : circuitsList.get(circuitsListIndex).jugglers) // loop through the list of jugglers in this circuit
-			{
-				System.out.println(juggler.getName());
-				if (currentCircuitMatchScore > getScore(circuitsList.get(circuitsListIndex), juggler)) // this juggler is a better fit than one of the existing jugglers in this circuit
-					break mainloop;
-				indexIntoJugglerList++; // else, compare with next juggler in the circuit
-			}
-			if (indexIntoJugglerList > teamSize-1) // if this juggler is not a better fit than any of the existing jugglers in this circuit
-			{
-				System.out.println("test");
-				circuitPreference++; // go to the next preferred circuit
-				circuitsListIndex = Character.getNumericValue(circuitPrefs[circuitPreference].charAt(1));
-				indexIntoJugglerList = 0;
-			}
-		}
-		circuitsList.get(circuitsListIndex).jugglers.add(indexIntoJugglerList, newJuggler);*/
-
-
-		static void output(ArrayList<Circuit>  jugglersAndCircuits)
-		{
-			System.out.println("\n\n ----------------------------Output-------------------------");
-			for (int i  = jugglersAndCircuits.size()-1; i >=0; i--)
-			{
-				Circuit currentCircuit = jugglersAndCircuits.get(i);
-				System.out.print(currentCircuit.getName());
-				for (int j = 0; j < currentCircuit.jugglers.size(); j++)
-				{
-					System.out.print(" " + currentCircuit.jugglers.get(j).getName());
-					for (String s : currentCircuit.jugglers.get(j).getCircuitPreferences())
-						System.out.print(" " + s + ":" + getScore(jugglersAndCircuits.get(Character.getNumericValue(s.charAt(1))), currentCircuit.jugglers.get(j)));
-				// Only print a comma if it's not the last juggler in the circuit
-					if (j < currentCircuit.jugglers.size()-1)
-						System.out.print(",");
-				}
-				System.out.println("");
-			}
-		}
-
-		private static int getScore(Circuit c, Juggler j)
-		{
-			return ((c.getHandEyeCoordination()*j.getHandEyeCoordination()) + (c.getEndurance()*j.getEndurance()) + (c.getPizzazz()*j.getPizzazz()));
-		}	
-	}
-
-	class Circuit
+	static void output(ArrayList<Circuit>  jugglersAndCircuits)
 	{
-		private String name;
-		private int handEyeCoordination;
-		private int endurance;
-		private int pizzazz;
-		public ArrayList<Juggler> jugglers = new ArrayList<>();
+		System.out.println("\n\n ----------------------------Output-------------------------");
+		for (int i  = jugglersAndCircuits.size()-1; i >=0; i--)
+		{
+			jugglersAndCircuits.get(i).printJugglers(jugglersAndCircuits);
+		}
+	}	
+}
 
-		public Circuit(String n, int h, int e, int p)
-		{
-			name = n;
-			handEyeCoordination = h;
-			endurance = e;
-			pizzazz = p;
-		}
+class Circuit
+{
+	private String name;
+	private int handEyeCoordination;
+	private int endurance;
+	private int pizzazz;
+	private ArrayList<Juggler> jugglers = new ArrayList<>();
 
-		public String getName()
-		{
-			return this.name;
-		}
-		public int getHandEyeCoordination()
-		{
-			return this.handEyeCoordination;
-		}
-		public int getEndurance()
-		{
-			return this.endurance;
-		}
-		public int getPizzazz()
-		{
-			return this.pizzazz;
-		}
-	}
-
-	class Juggler
+	public Circuit(String n, int h, int e, int p)
 	{
-		private String name;
-		private int handEyeCoordination;
-		private int endurance;
-		private int pizzazz;
-		private String[] circuitPreferences;
-		Queue<String> prefsQueue = new LinkedList<>();
-		public Juggler(String n, int h, int e, int p, String[] circuits)
-		{
-			name = n;
-			handEyeCoordination = h;
-			endurance = e;
-			pizzazz = p;
-			circuitPreferences = circuits;
-			for (String s : circuits)
-			{
-				prefsQueue.add(s);
-			}
-		}
+		name = n;
+		handEyeCoordination = h;
+		endurance = e;
+		pizzazz = p;
+	}
 
-		public String getName()
+	public String getName()
+	{
+		return this.name;
+	}
+	public int getHandEyeCoordination()
+	{
+		return this.handEyeCoordination;
+	}
+	public int getEndurance()
+	{
+		return this.endurance;
+	}
+	public int getPizzazz()
+	{
+		return this.pizzazz;
+	}
+
+	public Juggler addJuggler(Juggler j, int teamSize)
+	{
+		jugglers.add(j);
+		return null;
+	}
+
+	public void printJugglers(ArrayList<Circuit> circuitsList)
+	{
+		System.out.print(this.name);
+		for (int j = 0; j < this.jugglers.size(); j++)
 		{
-			return this.name;
+			System.out.print(" " + this.jugglers.get(j).getName());
+			for (String s : this.jugglers.get(j).getCircuitPreferences())
+				System.out.print(" " + s + ":" + circuitsList.get(Character.getNumericValue(s.charAt(1))).getScore(this.jugglers.get(j)));
+			// Only print a comma if it's not the last juggler in the circuit
+			if (j < this.jugglers.size()-1)
+				System.out.print(",");
 		}
-		public int getHandEyeCoordination()
+		System.out.println("");	
+	}
+
+	public int getScore(Juggler j)
+	{
+		return ((handEyeCoordination*j.getHandEyeCoordination()) + (endurance*j.getEndurance()) + (pizzazz*j.getPizzazz()));
+	}
+}
+
+
+class Juggler
+{
+	private String name;
+	private int handEyeCoordination;
+	private int endurance;
+	private int pizzazz;
+	private String[] circuitPreferences;
+	private Queue<String> prefsQueue = new LinkedList<>();
+	public Juggler(String n, int h, int e, int p, String[] circuits)
+	{
+		name = n;
+		handEyeCoordination = h;
+		endurance = e;
+		pizzazz = p;
+		circuitPreferences = circuits;
+		for (String s : circuits)
 		{
-			return this.handEyeCoordination;
-		}
-		public int getEndurance()
-		{
-			return this.endurance;
-		}
-		public int getPizzazz()
-		{
-			return this.pizzazz;
-		}
-		public String[] getCircuitPreferences()
-		{
-			return this.circuitPreferences;
+			prefsQueue.add(s);
 		}
 	}
+
+	public String getName()
+	{
+		return this.name;
+	}
+	public int getHandEyeCoordination()
+	{
+		return this.handEyeCoordination;
+	}
+	public int getEndurance()
+	{
+		return this.endurance;
+	}
+	public int getPizzazz()
+	{
+		return this.pizzazz;
+	}
+	public String[] getCircuitPreferences()
+	{
+		return this.circuitPreferences;
+	}
+
+	public String getPreferredCircuit()
+	{
+		if (!prefsQueue.isEmpty()) {
+			return prefsQueue.remove();
+		}
+		System.out.println("Queue is empty!");
+		return "";
+	}
+}
