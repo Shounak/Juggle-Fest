@@ -65,11 +65,11 @@ public class JuggleFest
 		static ArrayList<Circuit> readFile(String fileName)
 		{
 			BufferedReader fileReader = null;
-		// Store all the Circuit objects
+			// Store all the Circuit objects
 			ArrayList<Circuit> circuits = new ArrayList<>();
-		// Stores jugglers that did not make it into their first choice circuit
+			// Stores jugglers that did not make it into their first choice circuit
 			ArrayList<Juggler> rejectedJugglers = new ArrayList<>();
-		// Store jugglers that did not make it into any of their preferred circuits
+			// Store jugglers that did not make it into any of their preferred circuits
 			ArrayList<Juggler> preferencelessJugglers = new ArrayList<>();
 
 			int numberOfCircuits = 0;
@@ -77,12 +77,12 @@ public class JuggleFest
 			{
 				fileReader = new BufferedReader(new FileReader(fileName));
 
-			// read in all the circuits and add them to the ArrayList
+				// read in all the circuits and add them to the ArrayList
 				String circuitLine = fileReader.readLine();
 				while (!(circuitLine.trim().equals("")) && circuitLine.charAt(0) == 'C') 
 				{	
-				// Create a new Circuit object from the data in the line
-				// e.x. C C0 H:7 E:7 P:10
+					// Create a new Circuit object from the data in the line
+					// e.x. C C0 H:7 E:7 P:10
 					String[] data = circuitLine.split(" ");
 					String newCircuitName = data[1];
 					int newCircuitHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
@@ -96,12 +96,12 @@ public class JuggleFest
 
 				final int jugglersPerTeam = (numberOfLines(fileName) - numberOfCircuits)/numberOfCircuits;
 
-			// All the rest of the lines are jugglers
+				// All the rest of the lines are jugglers
 				String jugglerLine;
 				while ((jugglerLine = fileReader.readLine()) != null)
 				{
-				// Create a new Juggler object from the data in the line
-				// e.x. J J0 H:3 E:9 P:2 C2,C0,C1
+					// Create a new Juggler object from the data in the line
+					// e.x. J J0 H:3 E:9 P:2 C2,C0,C1
 					String[] data = jugglerLine.split(" ");
 					String newJugglerName = data[1];
 					int newJugglerHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
@@ -111,20 +111,20 @@ public class JuggleFest
 					Juggler newJuggler = new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs);
 					Circuit circuitToAddTo = circuits.get(Integer.parseInt(newJuggler.getPreferredCircuit().substring(1)));
 
-				// try adding the new juggler to their #1 preferred circuit
+					// try adding the new juggler to their #1 preferred circuit
 					Juggler rejectedJuggler =  circuitToAddTo.addJuggler(newJuggler, jugglersPerTeam);
-				// Jugglers that did not get into their #1 preference are placed in the rejectedJugglers list
+					// Jugglers that did not get into their #1 preference are placed in the rejectedJugglers list
 					if (rejectedJuggler != null)
 					{
 						rejectedJugglers.add(rejectedJuggler);
 					}
 				}
 
-			// Place all the rejected jugglers
+				// Place all the rejected jugglers
 				placeRejectedJugglers(rejectedJugglers, circuits, preferencelessJugglers, jugglersPerTeam);
 
-			// Jugglers who did not get into any of their preferred circuits are randomly placed by linearly searching for the 
-			// first non-full circuit and putting them there. 
+				// Jugglers who did not get into any of their preferred circuits are randomly placed by linearly searching for the 
+				// first non-full circuit and putting them there. 
 				for (Juggler preferencelessJuggler : preferencelessJugglers)
 				{
 					for (Circuit circuit : circuits)
@@ -189,7 +189,7 @@ public class JuggleFest
 			placeRejectedJugglers(newRejectedJugglers, circuits, preferencelessJugglers, jugglersPerTeam);
 		}
 
-	// Calls the printJugglers function for every Circuit object 
+		// Calls the printJugglers function for every Circuit object 
 		static void output(ArrayList<Circuit>  circuits, BufferedWriter bw)
 		{
 			for (int i  = circuits.size()-1; i >=0; i--)
@@ -215,7 +215,7 @@ public class JuggleFest
 			pizzazz = p;
 		}
 
-	// getters
+		// getters
 		public String getName() { return this.name; }
 		public int getHandEyeCoordination() { return this.handEyeCoordination; }
 		public int getEndurance() { return this.endurance; }
