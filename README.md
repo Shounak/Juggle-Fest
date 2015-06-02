@@ -5,6 +5,7 @@ More infromation about the problem can be found in ProblemStatement.md.
 This solution takes a very OO approach, where the Circuits class stores information about the circuit and all the jugglers assigned to it, and the JuggleFest class reads the file and creates and assigns all the circuits and jugglers. 
 
 There are three basic steps taken:
+
 1. Create all Circuit objects
 
 2. Create all Juggler objects and assign them to their first choice preference.
