@@ -10,9 +10,7 @@ To help us create the juggler/circuit assignments write a program in a language 
 One line per circuit or juggler. All circuits will come before any jugglers. Circuit lines start with a C and juggler lines start with a J. Names of circuits and jugglers will never have spaces. A skill and the rating for that skill are separated by a colon. Circuit lines have the circuit names followed by skills. Juggler lines have the juggler names followed by skills, followed by circuits in order of preference, separated by commas. Example:
 
 C C0 H:7 E:7 P:10
-
 C C1 H:2 E:1 P:1
-
 C C2 H:7 E:6 P:4
 
 
