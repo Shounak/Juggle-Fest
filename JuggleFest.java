@@ -58,7 +58,7 @@ public class JuggleFest
 
 		Placing jugglers is done in 3 steps:
 		1. Tries to put the jugglers into their first choice circuit. If this fails jugglers are added to the rejectedJugglers list
-		2. Goes down the juggler's circuit preferences, trying to put the juggler into each preferred circuit. 
+		2. Goes down the rejected juggler's circuit preferences, trying to put the juggler into each preferred circuit. 
 		   If the juggler doesn't get into any of their preferences, they are placed in the preferencelessJugglers list
 		3. preferencelessJugglers are placed into any open circuits
 	*/
