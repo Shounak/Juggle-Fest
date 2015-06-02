@@ -1,6 +1,6 @@
 #Juggle Fest#
 
-Many developers here at Yodle are avid jugglers. To celebrate their prowess we are organizing a Yodle Open JuggleFest, but we need your help planning it. There will be thousands of participants split into teams. Each team will attempt to complete a juggling circuit consisting of several tricks. Each circuit emphasizes different aspects of juggling, requiring hand to eye coordination (H), endurance (E) and pizzazz (P) in various amounts for successful completion. Each juggler has these abilities in various amounts as well. How good a match they are for a circuit is determined by the dot product of the juggler’s and the circuit’s H, E, and P values. The higher the result, the better the match.
+Many developers here at Yodle are avid jugglers. To celebrate their prowess we are organizing a Yodle Open JuggleFest, but we need your help planning it. There will be thousands of participants split into teams. Each team will attempt to complete a juggling circuit consisting of several tricks. Each circuit emphasizes different aspects of juggling, requiring hand to eye coordination (H), endurance (E) and pizzazz (P) in various amounts for successful completion. Each juggler has these abilities in various amounts as well. How good a match they are for a circuit is determined by the dot product of the jugglerâ€™s and the circuitâ€™s H, E, and P values. The higher the result, the better the match.
 
 Each participant will be on exactly one team and there will be a distinct circuit for each team to attempt. Each participant will rank in order of preference their top X circuits. Since we would like the audiences to enjoy the performances as much as possible, when assigning jugglers to circuits we also want to consider how well their skills match up to the circuit. In fact we want to match jugglers to circuits such that no juggler could switch to a circuit that they prefer more than the one they are assigned to and be a better fit for that circuit than one of the other jugglers assigned to it.
 
@@ -10,7 +10,9 @@ To help us create the juggler/circuit assignments write a program in a language 
 One line per circuit or juggler. All circuits will come before any jugglers. Circuit lines start with a C and juggler lines start with a J. Names of circuits and jugglers will never have spaces. A skill and the rating for that skill are separated by a colon. Circuit lines have the circuit names followed by skills. Juggler lines have the juggler names followed by skills, followed by circuits in order of preference, separated by commas. Example:
 
 C C0 H:7 E:7 P:10
+
 C C1 H:2 E:1 P:1
+
 C C2 H:7 E:6 P:4
 
 
@@ -40,7 +42,7 @@ J J11 H:8 E:4 P:7 C0,C1,C2
 
 
 ###Output file###
-One line per circuit assignment. Each line should contain the circuit name followed by the juggler name, followed by that juggler’s circuits in order of preference and the match score for that circuit. The line should include all jugglers matched to the circuit. The example below is a valid assignment for the input file above.
+One line per circuit assignment. Each line should contain the circuit name followed by the juggler name, followed by that jugglerâ€™s circuits in order of preference and the match score for that circuit. The line should include all jugglers matched to the circuit. The example below is a valid assignment for the input file above.
 
 C2 J6 C2:128 C1:31 C0:188, J3 C2:120 C0:171 C1:31, J10 C0:120 C2:86 C1:21, J0 C2:83 C0:104 C1:17
 
