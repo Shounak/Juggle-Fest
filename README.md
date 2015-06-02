@@ -6,6 +6,7 @@ This solution takes a very OO approach, where the Circuits class stores informat
 
 There are three basic steps taken:
 1. Create all Circuit objects
+
 2. Create all Juggler objects and assign them to their first choice preference.
   1. If the above fails, go down the juggler's preference list, trying to assign them to each circuit. 
   2. If the juggler doesn't fit into any of their preferences, place them into any open circuit. 
