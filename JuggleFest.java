@@ -5,7 +5,7 @@ public class JuggleFest
 {
 	public static void main(String[] args) 
 	{
-		String fileName = "simpleJuggleFest.txt";
+		String fileName = "JuggleFest.txt";
 		output(readFile(fileName));
 	}
 
@@ -32,11 +32,26 @@ public class JuggleFest
 		return (linesCount-1); // "-1" is because there is an empty line between Circuits and Jugglers
 	}
 
+	/*
+		This function reads the file line-by-line.
+		It first creates Circuit objects to add to the circuits ArrayList
+		It then creates and places Juggler objects. 
+
+		Placing jugglers is done in 3 steps:
+		1. Tries to put the jugglers into their first choice circuit. If this fails jugglers are added to the rejectedJugglers list
+		2. Goes down the juggler's circuit preferences, trying to put the juggler into each preferred circuit. 
+		   If the juggler doesn't get into any of their preferences, they are placed in the preferencelessJugglers list
+		3. preferencelessJugglers are placed into any open circuits
+	*/
 	static ArrayList<Circuit> readFile(String fileName)
 	{
 		BufferedReader fileReader = null;
+		// Store all the Circuit objects
 		ArrayList<Circuit> circuits = new ArrayList<>();
+		// Stores jugglers that did not make it into their first choice circuit
 		ArrayList<Juggler> rejectedJugglers = new ArrayList<>();
+		// Store jugglers that did not make it into any of their preferred circuits
+		ArrayList<Juggler> preferencelessJugglers = new ArrayList<>();
 
 		int numberOfCircuits = 0;
 		try
@@ -47,8 +62,9 @@ public class JuggleFest
 			String circuitLine = fileReader.readLine();
 			while (!(circuitLine.trim().equals("")) && circuitLine.charAt(0) == 'C') 
 			{	
+				// Create a new Circuit object from the data in the line
+				// e.x. C C0 H:7 E:7 P:10
 				String[] data = circuitLine.split(" ");
-
 				String newCircuitName = data[1];
 				int newCircuitHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
 				int newCircuitEndurance = Integer.parseInt(data[3].split(":")[1]);
@@ -65,6 +81,8 @@ public class JuggleFest
 			String jugglerLine;
 			while ((jugglerLine = fileReader.readLine()) != null)
 			{
+				// Create a new Juggler object from the data in the line
+				// e.x. J J0 H:3 E:9 P:2 C2,C0,C1
 				String[] data = jugglerLine.split(" ");
 				String newJugglerName = data[1];
 				int newJugglerHandEyeCoordination = Integer.parseInt(data[2].split(":")[1]);
@@ -72,14 +90,30 @@ public class JuggleFest
 				int newJugglerPizzazz = Integer.parseInt(data[4].split(":")[1]);
 				String[] circuitPrefs = data[5].split(",");
 				Juggler newJuggler = new Juggler(newJugglerName, newJugglerHandEyeCoordination, newJugglerEndurance, newJugglerPizzazz, circuitPrefs);
-				Circuit circuitToAddTo = circuits.get(Character.getNumericValue(newJuggler.getPreferredCircuit().charAt(1)));
+				Circuit circuitToAddTo = circuits.get(Integer.parseInt(newJuggler.getPreferredCircuit().substring(1)));
+
+				// try adding the new juggler to their #1 preferred circuit
 				Juggler rejectedJuggler =  circuitToAddTo.addJuggler(newJuggler, jugglersPerTeam);
+				// Jugglers that did not get into their #1 preference are placed in the rejectedJugglers list
 				if (rejectedJuggler != null)
 				{
 					rejectedJugglers.add(rejectedJuggler);
 				}
 			}
-			placeRejectedJugglers(rejectedJugglers, circuits, jugglersPerTeam);
+
+			// Place all the rejected jugglers
+			placeRejectedJugglers(rejectedJugglers, circuits, preferencelessJugglers, jugglersPerTeam);
+
+			// Jugglers who did not get into any of their preferred circuits are randomly placed by linearly searching for the 
+			// first non-full circuit and putting them there. 
+			for (Juggler preferencelessJuggler : preferencelessJugglers)
+			{
+				for (Circuit circuit : circuits)
+				{
+					if (!circuit.isFull(jugglersPerTeam))
+						circuit.addJuggler(preferencelessJuggler, jugglersPerTeam);
+				}
+			}
 		}
 		catch (IOException e) 
 		{
@@ -100,7 +134,17 @@ public class JuggleFest
 		return circuits;
 	}
 
-	static void placeRejectedJugglers(ArrayList<Juggler> rejectedJugglers, ArrayList<Circuit> circuits, int jugglersPerTeam)
+	/*
+		This function takes in an ArrayList of jugglers that did not get into their first choice circuit. 
+		It works through this list, attempting to place each juggler into their next-preferred circuit. 
+		If the juggler does not fit into their preferred circuit, or if a juggler got kicked out of a circuit by a new juggler, 
+		then that juggler is added to a new "newRejectedJugglers" list. 
+
+		The function is then recursively called with the "newRejectedJugglers" list until all jugglers are placed into either a circuit 
+		or the preferencelessJugglers list. 
+		The function is tail-recursive, to decrease impact on Big-O runtime. 
+	*/
+	static void placeRejectedJugglers(ArrayList<Juggler> rejectedJugglers, ArrayList<Circuit> circuits, ArrayList<Juggler> preferencelessJugglers, int jugglersPerTeam)
 	{
 		if (rejectedJugglers.isEmpty())
 			return;
@@ -108,22 +152,30 @@ public class JuggleFest
 		ArrayList<Juggler> newRejectedJugglers = new ArrayList<>();
 		for (Juggler j : rejectedJugglers)
 		{
-			Circuit rejectedJugglerCircuit = circuits.get(Character.getNumericValue(j.getPreferredCircuit().charAt(1)));
-			Juggler newRejectedJuggler =  rejectedJugglerCircuit.addJuggler(j, jugglersPerTeam);
-			if (newRejectedJuggler != null)
-			{
-				newRejectedJugglers.add(newRejectedJuggler);
-			}	
-		}
+			String preference = j.getPreferredCircuit();
 
-		placeRejectedJugglers(newRejectedJugglers, circuits, jugglersPerTeam);
+			// This juggler does not have any remaining circuit preferences
+			if (preference.equals(""))
+				preferencelessJugglers.add(j);
+			else 
+			{
+				Circuit rejectedJugglerCircuit = circuits.get(Integer.parseInt(preference.substring(1)));
+				Juggler newRejectedJuggler =  rejectedJugglerCircuit.addJuggler(j, jugglersPerTeam);
+				if (newRejectedJuggler != null)
+				{
+					newRejectedJugglers.add(newRejectedJuggler);
+				}	
+			}
+		}
+		placeRejectedJugglers(newRejectedJugglers, circuits, preferencelessJugglers, jugglersPerTeam);
 	}
 
+	// Calls the printJugglers function for every Circuit object 
 	static void output(ArrayList<Circuit>  circuits)
 	{
 		for (int i  = circuits.size()-1; i >=0; i--)
 		{
-			circuits.get(i).printJugglers(circuits);
+			//circuits.get(i).printJugglers(circuits);
 		}
 	}	
 }
@@ -144,12 +196,19 @@ class Circuit
 		pizzazz = p;
 	}
 
+	// getters
 	public String getName() { return this.name; }
 	public int getHandEyeCoordination() { return this.handEyeCoordination; }
 	public int getEndurance() { return this.endurance; }
 	public int getPizzazz() { return this.pizzazz; }
 
-	// Adds jugglers to the circuit, and keeps the ordering of the jugglers in the circuit as greatest to least score. 
+	/*
+	Adds jugglers to the circuit, and keeps the jugglers in the circuit in order from greatest to least score
+	If the juggler to be added does not "get in" to the circuit i.e. the circuit is full and their score is not greater than any existing juggler, 
+	then that juggler gets returned without being added. 
+
+	If the circuit is full and the new juggler gets added, then the lowest scoring juggler is removed and returned. 
+	*/
 	public Juggler addJuggler(Juggler j, int teamSize)
 	{
 		int insertIndex = 0;
@@ -178,18 +237,27 @@ class Circuit
 		{
 			System.out.print(" " + this.jugglers.get(j).getName());
 			for (String s : this.jugglers.get(j).getCircuitPreferences())
-				System.out.print(" " + s + ":" + circuitsList.get(Character.getNumericValue(s.charAt(1))).getScore(this.jugglers.get(j)));
+				System.out.print(" " + s + ":" + circuitsList.get(Integer.parseInt(s.substring(1))).getScore(this.jugglers.get(j)));
 			// Only print a comma if it's not the last juggler in the circuit
 			if (j < this.jugglers.size()-1)
 				System.out.print(",");
 		}
-		System.out.println("\n");	
+		System.out.println("");	
 	}
 
 	// Returns the dot product of this circuit and the given juggler
 	private int getScore(Juggler j)
 	{
 		return ((handEyeCoordination*j.getHandEyeCoordination()) + (endurance*j.getEndurance()) + (pizzazz*j.getPizzazz()));
+	}
+
+	// Returns true if the circuit can't accept any new jugglers without kicking out an existing one
+	// This function is useful when placing preferenceless jugglers
+	public boolean isFull(int teamSize)
+	{
+		if (jugglers.size() >= teamSize)
+			return true;
+		return false;
 	}
 }
 
@@ -219,6 +287,7 @@ class Juggler
 		}
 	}
 
+	// getters
 	public String getName() { return this.name; }
 	public int getHandEyeCoordination() { return this.handEyeCoordination; }
 	public int getEndurance() { return this.endurance; }
@@ -226,13 +295,13 @@ class Juggler
 	public String[] getCircuitPreferences() { return this.circuitPreferences; }
 
 	// Removes and returns this juggler's currently most preferred circuit
-	// Because the circuit gets removed, each time this is called, it moves down the list of preferred circuits
+	// This function is a convenient way to move down the list of preferred circuits
+	// If there are no more preferences left, it returns an empty string
 	public String getPreferredCircuit()
 	{
 		if (!prefsQueue.isEmpty()) {
 			return prefsQueue.remove();
 		}
-		System.out.println("Queue is empty!");
 		return "";
 	}
 }
